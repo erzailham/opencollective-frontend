@@ -6,7 +6,8 @@ import { graphql } from 'react-apollo';
 import { get } from 'lodash';
 
 import { getFromLocalStorage, LOCAL_STORAGE_KEYS } from '../../lib/local-storage';
-import { capitalize, getCurrencySymbol, imagePreview } from '../../lib/utils';
+import { capitalize, getCurrencySymbol } from '../../lib/utils';
+import { imagePreview } from '../../lib/image-utils';
 import InputField from '../../components/InputField';
 import categories from '../../lib/constants/categories';
 import DefinedTerm, { Terms } from '../DefinedTerm';

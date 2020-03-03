@@ -39,7 +39,7 @@ Router.onRouteChangeComplete = () => NProgress.done();
 Router.onRouteChangeError = () => NProgress.done();
 
 import { getGoogleMapsScriptUrl, loadGoogleMaps } from '../lib/google-maps';
-import { getEnvVar } from '../lib/utils';
+import { getEnvVar } from '../lib/env-utils';
 
 Sentry.init({
   dsn: getEnvVar('SENTRY_DSN'),
