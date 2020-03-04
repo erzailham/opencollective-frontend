@@ -144,6 +144,10 @@ class EditCollectiveForm extends React.Component {
         id: 'startDateAndTime',
         defaultMessage: 'start date and time',
       },
+      'endsAt.label': {
+        id: 'event.endsAt.label',
+        defaultMessage: 'end date and time',
+      },
       'image.label': { id: 'collective.image.label', defaultMessage: 'Avatar' },
       'backgroundImage.label': {
         id: 'collective.backgroundImage.label',
@@ -284,6 +288,23 @@ class EditCollectiveForm extends React.Component {
       set(collective, 'settings.VAT.type', value);
     } else if (fieldname === 'VAT-number') {
       set(collective, 'settings.VAT.number', value);
+    } else if (fieldname === 'startsAt' && collective.type === CollectiveType.EVENT) {
+      collective[fieldname] = value;
+      const endsAt = collective.endsAt;
+      if (!endsAt || new Date(endsAt) < new Date(value)) {
+        let newEndDate = new Date(value);
+        if (!endsAt) {
+          newEndDate.setHours(newEndDate.getHours() + 2);
+        } else {
+          // https://github.com/opencollπective/opencollective/issues/1232
+          const endsAtDate = new Date(endsAt);
+          newEndDate = new Date(value);
+          newEndDate.setHours(endsAtDate.getHours());
+          newEndDate.setMinutes(endsAtDate.getMinutes());
+        }
+        const endsAtValue = newEndDate.toString();
+        collective['endsAt'] = endsAtValue;
+      }
     } else {
       collective[fieldname] = value;
     }
@@ -335,7 +356,7 @@ class EditCollectiveForm extends React.Component {
             <EditCollectiveEmptyBalance collective={collective} LoggedInUser={LoggedInUser} />
           )}
           <EditCollectiveArchive collective={collective} />
-          {collective.type !== CollectiveType.EVENT && <EditCollectiveDelete collective={collective} />}
+          <EditCollectiveDelete collective={collective} />
           <hr />
         </Box>
       );
@@ -449,6 +470,7 @@ class EditCollectiveForm extends React.Component {
           name: 'slug',
           pre: 'https://opencollective.com/',
           placeholder: '',
+          when: () => collective.type !== CollectiveType.EVENT,
         },
         {
           name: 'twitterHandle',
@@ -457,6 +479,7 @@ class EditCollectiveForm extends React.Component {
           maxLength: 255,
           placeholder: '',
           label: 'Twitter',
+          when: () => collective.type !== CollectiveType.EVENT,
         },
         {
           name: 'githubHandle',
@@ -465,23 +488,62 @@ class EditCollectiveForm extends React.Component {
           maxLength: 39,
           placeholder: '',
           label: 'Github',
+          when: () => collective.type !== CollectiveType.EVENT,
         },
         {
           name: 'website',
           type: 'text',
           maxLength: 255,
           placeholder: '',
+          when: () => collective.type !== CollectiveType.EVENT,
         },
         {
           name: 'address',
           placeholder: '',
           maxLength: 255,
           type: 'textarea',
+          when: () => collective.type !== CollectiveType.EVENT,
         },
         {
           name: 'country',
           type: 'country',
           placeholder: 'Select country',
+          when: () => collective.type !== CollectiveType.EVENT,
+        },
+        {
+          name: 'startsAt',
+          type: 'datetime',
+          placeholder: '',
+          defaultValue: collective.startsAt || defaultStartsAt,
+          validate: date => {
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            return date.isAfter(yesterday);
+          },
+          when: () => collective.type === CollectiveType.EVENT,
+        },
+        {
+          name: 'endsAt',
+          type: 'datetime',
+          options: { timezone: collective.timezone },
+          placeholder: '',
+          validate: date => {
+            const yesterday = new Date(collective.startsAt || defaultStartsAt);
+            yesterday.setDate(yesterday.getDate() - 1);
+            return date.isAfter(yesterday);
+          },
+          when: () => collective.type === CollectiveType.EVENT,
+        },
+        {
+          name: 'timezone',
+          type: 'TimezonePicker',
+          when: () => collective.type === CollectiveType.EVENT,
+        },
+        {
+          name: 'location',
+          placeholder: '',
+          type: 'location',
+          when: () => collective.type === CollectiveType.EVENT,
         },
         {
           name: 'VAT',
@@ -520,6 +582,10 @@ class EditCollectiveForm extends React.Component {
           placeholder: 'FRXX999999999',
           defaultValue: get(this.state.collective, 'settings.VAT.number'),
           when: () => {
+            if (collective.type === CollectiveType.EVENT) {
+              return false;
+            }
+
             if (this.state.collective.type === CollectiveType.COLLECTIVE) {
               // Collectives can set a VAT number if configured
               const collectiveCountry = get(this.state.collective, 'location.country');
@@ -542,6 +608,7 @@ class EditCollectiveForm extends React.Component {
           maxLength: 128,
           type: 'tags',
           placeholder: 'meetup, javascript',
+          when: () => collective.type !== CollectiveType.EVENT,
         },
         {
           name: 'tos',
