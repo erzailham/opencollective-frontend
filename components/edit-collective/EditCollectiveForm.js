@@ -295,7 +295,7 @@ class EditCollectiveForm extends React.Component {
         if (!endsAt) {
           newEndDate.setHours(newEndDate.getHours() + 2);
         } else {
-          // https://github.com/opencollπective/opencollective/issues/1232
+          // https://github.com/opencollective/opencollective/issues/1232
           const endsAtDate = new Date(endsAt);
           newEndDate = new Date(value);
           newEndDate.setHours(endsAtDate.getHours());
