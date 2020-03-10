@@ -255,7 +255,7 @@ class ExpensePage extends React.Component {
               pt={55}
             >
               <Flex flexDirection="column" alignItems="center" width={90}>
-                <ExpenseAdminActions permissions={expense?.permissions} />
+                <ExpenseAdminActions expense={expense} collective={collective} permissions={expense?.permissions} />
               </Flex>
             </Container>
             <Box flex="1 1 650px" minWidth={300} maxWidth={816} mr={[null, 3, 4, 5]} py={3} px={3}>
